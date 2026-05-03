@@ -1,24 +1,20 @@
 "use client";
 
 import { type SubmitEvent, useId, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMessageMutation } from "@/lib/services/api-message.service";
 import { SELF_AUTHOR } from "@/lib/constants";
 
-export const SendMessage = ({
-  onMessageSent,
-}: {
-  onMessageSent: () => void;
-}) => {
+export const SendMessage = () => {
+  const queryClient = useQueryClient();
   const messageId = useId();
   const messageFieldRef = useRef<HTMLTextAreaElement>(null);
   const [message, setMessage] = useState("");
 
   const mutation = useMutation({
-    ...createMessageMutation(),
+    ...createMessageMutation(queryClient),
     onSuccess: () => {
       setMessage("");
-      onMessageSent();
       queueMicrotask(() => messageFieldRef.current?.focus());
     },
   });
@@ -45,7 +41,7 @@ export const SendMessage = ({
         name="message"
         required
         rows={1}
-        maxLength={4000}
+        maxLength={500}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={(e) => {

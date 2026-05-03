@@ -1,7 +1,10 @@
 import ApiService from "./api.service";
 import { API_URL } from "@/lib/constants";
+import type { QueryClient } from "@tanstack/react-query";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { Message, GetMessagesParams, CreateMessageBody } from "@/lib/types";
+
+const messagesListPrefix = ["messages", "list"] as const;
 
 class ApiMessageService extends ApiService {
   async getMessages(params: GetMessagesParams = {}): Promise<Message[]> {
@@ -30,17 +33,48 @@ class ApiMessageService extends ApiService {
 
 export const apiMessageService = new ApiMessageService();
 
-export const getMessagesQuery = (params: GetMessagesParams) => {
+export const getMessagesQuery = (params: GetMessagesParams = {}) => {
   return queryOptions({
-    queryKey: ["messages"],
+    queryKey: [...messagesListPrefix, params] as const,
     queryFn: () => apiMessageService.getMessages(params),
+    refetchInterval: 5000,
   });
 };
 
-export const createMessageMutation = () => {
-  return mutationOptions({
+export const createMessageMutation = (queryClient: QueryClient) =>
+  mutationOptions({
     mutationKey: ["messages", "create"],
     mutationFn: (body: CreateMessageBody) =>
       apiMessageService.createMessage(body),
+
+    onMutate: async (body) => {
+      await queryClient.cancelQueries({ queryKey: messagesListPrefix });
+      const snapshots = queryClient.getQueriesData<Message[]>({
+        queryKey: messagesListPrefix,
+      });
+      const tempMessage: Message = {
+        _id: `temp-${crypto.randomUUID()}`,
+        author: body.author,
+        message: body.message,
+        createdAt: new Date().toISOString(),
+      };
+
+      for (const [key, prev] of snapshots) {
+        queryClient.setQueryData<Message[]>(key, [
+          ...(prev ?? []),
+          tempMessage,
+        ]);
+      }
+      return { snapshots };
+    },
+
+    onError: (_err, _body, ctx) => {
+      ctx?.snapshots.forEach(([key, prev]) =>
+        queryClient.setQueryData(key, prev),
+      );
+    },
+
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: messagesListPrefix });
+    },
   });
-};

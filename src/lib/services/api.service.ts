@@ -1,10 +1,7 @@
 import { ApiRequestError } from "./ApiRequestError";
 
 class ApiService {
-  protected async request<T>(
-    path: string,
-    init: RequestInit & { signal?: AbortSignal } = {},
-  ): Promise<T> {
+  protected async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const { baseUrl, token } = getConfig();
     const res = await fetch(`${baseUrl}${path}`, {
       ...init,

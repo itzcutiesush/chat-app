@@ -3,7 +3,7 @@
 import { MessageList } from "@/app/_components/MessageList";
 import { SendMessage } from "@/app/_components/SendMessage";
 import { getMessagesQuery } from "@/lib/services/api-message.service";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export const ChatContainer = () => {
   const {
@@ -14,14 +14,6 @@ export const ChatContainer = () => {
     ...getMessagesQuery({}),
     retry: 3,
   });
-
-  const queryClient = useQueryClient();
-
-  const handleMessageSent = async () => {
-    await queryClient.invalidateQueries({
-      queryKey: getMessagesQuery({}).queryKey,
-    });
-  };
 
   if (isError) {
     return (
@@ -67,7 +59,7 @@ export const ChatContainer = () => {
         aria-label="Message composer"
       >
         <div className="mx-auto w-full max-w-[var(--max-content-width)] px-6 py-4">
-          <SendMessage onMessageSent={handleMessageSent} />
+          <SendMessage />
         </div>
       </footer>
     </div>

@@ -14,7 +14,7 @@ export const MessageList = ({ messages }: { messages: Message[] }) => {
 
   return (
     <section
-      className="doodle-bg flex min-h-0 flex-1 flex-col overflow-y-auto"
+      className="doodle-bg flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable_both-edges]"
       aria-labelledby="chat-messages-heading"
     >
       <h2 id="chat-messages-heading" className="sr-only">
