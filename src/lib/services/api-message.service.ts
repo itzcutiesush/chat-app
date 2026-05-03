@@ -1,6 +1,6 @@
 import ApiService from "./api.service";
 import { API_URL } from "@/lib/constants";
-import { queryOptions } from "@tanstack/react-query";
+import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { Message, GetMessagesParams, CreateMessageBody } from "@/lib/types";
 
 class ApiMessageService extends ApiService {
@@ -32,7 +32,15 @@ export const apiMessageService = new ApiMessageService();
 
 export const getMessagesQuery = (params: GetMessagesParams) => {
   return queryOptions({
-    queryKey: ["messages", params],
+    queryKey: ["messages"],
     queryFn: () => apiMessageService.getMessages(params),
+  });
+};
+
+export const createMessageMutation = () => {
+  return mutationOptions({
+    mutationKey: ["messages", "create"],
+    mutationFn: (body: CreateMessageBody) =>
+      apiMessageService.createMessage(body),
   });
 };
